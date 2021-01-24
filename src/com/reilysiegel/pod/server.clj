@@ -3,7 +3,7 @@
             [com.reilysiegel.pod.server.handler :as handler]
             [com.reilysiegel.pod.server.parser :as parser]
             [com.reilysiegel.pod.utils :as utils]
-            [datahike.core :as d]
+            [datahike.api :as d]
             [integrant.core :as ig]
             [com.reilysiegel.pod.person :as person]
             [com.reilysiegel.pod.score :as score]
@@ -30,7 +30,20 @@
   (init!)
   (halt!)
 
-  (d/q 
+  (->>   (d/q '[:find ?pid ?tx
+                :keys com.reilysiegel.pod.person/id db/txInstant
+                :where
+                [?t ::task/id #uuid "600dd9af-135d-4234-8427-1173717b4b0c"]
+                [?t ::task/person ?p ?tx]
+                [?p ::person/id ?pid]]
+              (d/history @(::db/conn @system)))
+         (sort-by :db/txInstant)
+         (map #(dissoc % :db/txInstant))
+         dedupe)
+
+  (d/datoms (d/history @(::db/conn @system)) :aevt ::task/person)
+
+  (d/q
    '[:find ?pid .
      :in $ ?id
      :where

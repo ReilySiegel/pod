@@ -1,5 +1,5 @@
 (ns com.reilysiegel.pod.task
-  (:require #?@(:clj [[datahike.core :as d]])
+  (:require #?@(:clj [[datahike.api :as d]])
             #?@(:cljs [[com.fulcrologic.fulcro.algorithms.form-state :as fs]
                        [com.fulcrologic.fulcro.components :as comp]
                        [com.fulcrologic.fulcro.data-fetch :as df]
@@ -9,7 +9,8 @@
             [com.reilysiegel.pod.person :as person]
             [com.reilysiegel.pod.specs :as specs]
             [com.reilysiegel.pod.utils :as utils]
-            [com.wsscode.pathom3.connect.operation :as pco]))
+            [com.wsscode.pathom3.connect.operation :as pco]
+            [com.reilysiegel.pod.server.database :as db]))
 
 (s/def ::id uuid?)
 
@@ -154,6 +155,27 @@
            id)}))
 
 #?(:clj
+   (pco/defresolver task->people
+     [{:com.reilysiegel.pod.server.database/keys [conn]}
+      {::keys [id]}]
+     {::pco/output [{::people [::person/id]}]}
+     {::people
+      (->> (d/q '[:find ?pid ?tx
+                  :keys com.reilysiegel.pod.person/id db/txInstant
+                  :in $ ?id
+                  :where
+                  [?t ::id ?id]
+                  [?t ::person ?p ?tx]
+                  [?p ::person/id ?pid]]
+                (d/history @conn)
+                id)
+           (sort-by :db/txInstant)
+           (map #(dissoc % :db/txInstant))
+           dedupe
+           vec)}))
+
+
+#?(:clj
    (pco/defresolver person->tasks
      [{:com.reilysiegel.pod.server.database/keys [conn]}
       {::person/keys [id]}]
@@ -186,6 +208,7 @@
            complete
            delete
            task->person
+           task->people
            person->tasks
            status-text
            all-incomplete

@@ -116,18 +116,32 @@
 
 (def ui-create (comp/factory Create))
 
-(comp/defsc TaskCard [this {::task/keys   [id name effort complete? late? status-text]
+(comp/defsc Person [this {::person/keys [name]}]
+  {:ident ::person/id
+   :query [::person/id ::person/name]}
+  (mui/typography {:variant :subtitle1 :color :textSecondary :noWrap true} name))
+
+(def ui-person (comp/factory Person #_{:keyfn ::person/id}))
+
+(comp/defsc TaskCard [this {::task/keys   [id name effort complete? late? status-text
+                                           people]
                             ::person/keys [authed]
+                            :ui/keys      [open?]
                             person-id     ::person/id
                             person-name   ::person/name
                             :as           props}]
   {:ident         ::task/id
    :query         [::task/id ::task/name ::task/effort ::task/complete?
                    ::task/late? ::person/name ::task/status-text ::person/id
+                   :ui/open?
+                   {::task/people (comp/get-query Person)}
                    {::person/authed [::person/id ::person/name ::person/op?]}]
-   :initial-state {}}
+   :initial-state {:ui/open? false}
+   :use-hooks?    true}
   (let [{authed-id ::person/id
-         op?       ::person/op?} authed]
+         op?       ::person/op?} authed
+        {{:keys [create duration]}
+         :transitions}           (mui/use-theme)]
     (mui/grid
      {:item true
       :xs   12
@@ -194,7 +208,21 @@
            {:onClick #(comp/transact!
                        this
                        [(task/delete {::task/id id})])}
-           (mui/delete-icon)))))))))
+           (mui/delete-icon))))
+       (mui/tooltip
+        {:title "History"}
+        (mui/icon-button
+         {:sx      {:marginLeft "auto !important"
+                    :transform  (if open? "rotate(180deg)" "rotate(0deg)")
+                    :transition (str (create "transform" #js {:duration (:shortest duration)})
+                                     " !important")}
+          :onClick #(m/toggle! this :ui/open?)}
+         (mui/expand-more-icon))))
+      (mui/collapse
+       {:in open? :timeout :auto :unmountOnExit true}
+       (mui/card-content
+        {}
+        (map ui-person (reverse people))))))))
 
 (def ui-task-card (comp/factory TaskCard {:keyfn ::task/id}))
 
@@ -227,5 +255,5 @@
     {:container true
      :spacing   3
      :sx        {:flexGrow 1}}
-    (mapv ui-task-card incomplete))
+    (map-indexed (fn [idx props] (ui-task-card (assoc props :react-key (str idx)))) incomplete))
    (ui-create create)))

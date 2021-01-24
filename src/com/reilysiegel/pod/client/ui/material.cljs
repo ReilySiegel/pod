@@ -7,6 +7,7 @@
             ["@material-ui/icons/Add" :default AddIcon]
             ["@material-ui/icons/Dashboard" :default DashboardIcon]
             ["@material-ui/icons/Delete" :default DeleteIcon]
+            ["@material-ui/icons/ExpandMore" :default ExpandMoreIcon]
             ["@material-ui/icons/Menu" :default MenuIcon]
             ["@material-ui/icons/People" :default PeopleIcon]
             ["@material-ui/icons/AssignmentTurnedIn"
@@ -25,6 +26,7 @@
 (def card-actions (interop/react-factory mui/CardActions))
 (def card-content (interop/react-factory mui/CardContent))
 (def checkbox (interop/react-factory mui/Checkbox))
+(def collapse (interop/react-factory mui/Collapse))
 (def container (interop/react-factory mui/Container))
 (def css-baseline (interop/react-factory mui/CssBaseline))
 (def dialog (interop/react-factory mui/Dialog))
@@ -54,6 +56,7 @@
 (def add-icon (interop/react-factory AddIcon))
 (def dashboard-icon (interop/react-factory DashboardIcon))
 (def delete-icon (interop/react-factory DeleteIcon))
+(def expand-more-icon (interop/react-factory ExpandMoreIcon))
 (def menu-icon (interop/react-factory MenuIcon))
 (def people-icon (interop/react-factory PeopleIcon))
 (def assignment-turned-in-icon (interop/react-factory AssignmentTurnedInIcon))
