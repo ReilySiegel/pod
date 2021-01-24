@@ -1,0 +1,8 @@
+{:deps {:aliases [:cljs]}
+ :builds
+ {:frontend
+  {:target     :browser
+   :modules    {:main {:init-fn com.reilysiegel.pod.client/init!}}
+   :output-dir "resources/public/js"
+   :devtools   {:after-load com.reilysiegel.pod.client/refresh!
+                :preloads   [com.fulcrologic.fulcro.inspect.preload]}}}}
