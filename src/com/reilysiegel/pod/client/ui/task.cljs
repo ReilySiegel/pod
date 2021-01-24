@@ -156,31 +156,33 @@
        (mui/typography {:variant :h5 :component :h6} name)
        (mui/typography {:variant :subtitle1 :color :textSecondary}
                        (str "Effort: " effort " Minutes"))
-       (comp/fragment
-        (mui/typography {:variant :subtitle1 :color :textSecondary :noWrap true}
-                        status-text)
-        (mui/typography {:variant :subtitle1 :color :textSecondary :noWrap true}
-                        person-name)                
-        (mui/form-control-label
-         {:label    "Complete"
-          :disabled (not person-id)
-          :control  (mui/checkbox
-                     {:checked (boolean complete?)
-                      :onClick #(comp/transact!
-                                 this
-                                 [(task/complete
-                                   #::task{:id        id
-                                           :complete? (not complete?)})])})})
-        (mui/form-control-label
-         {:label    "Late"
-          :disabled (not person-id)
-          :control  (mui/checkbox
-                     {:checked (boolean late?)
-                      :onClick #(comp/transact!
-                                 this
-                                 [(task/complete
-                                   #::task{:id    id
-                                           :late? (not late?)})])})})))
+       
+       (mui/typography {:variant :subtitle1 :color :textSecondary :noWrap true}
+                       status-text)
+       (mui/typography {:variant :subtitle1 :color :textSecondary :noWrap true}
+                       person-name)
+       (when op?
+         (comp/fragment
+          (mui/form-control-label
+           {:label    "Complete"
+            :disabled (not person-id)
+            :control  (mui/checkbox
+                       {:checked (boolean complete?)
+                        :onClick #(comp/transact!
+                                   this
+                                   [(task/complete
+                                     #::task{:id        id
+                                             :complete? (not complete?)})])})})
+          (mui/form-control-label
+           {:label    "Late"
+            :disabled (not person-id)
+            :control  (mui/checkbox
+                       {:checked (boolean late?)
+                        :onClick #(comp/transact!
+                                   this
+                                   [(task/complete
+                                     #::task{:id    id
+                                             :late? (not late?)})])})}))))
       (mui/card-actions
        {}
        (if-not (= person-id authed-id)
