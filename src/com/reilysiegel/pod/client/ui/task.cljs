@@ -119,10 +119,11 @@
 (comp/defsc TaskCard [this {::task/keys   [id name effort complete? late? status-text]
                             ::person/keys [authed]
                             person-id     ::person/id
+                            person-name   ::person/name
                             :as           props}]
   {:ident         ::task/id
    :query         [::task/id ::task/name ::task/effort ::task/complete?
-                   ::task/late? ::task/status-text ::person/id
+                   ::task/late? ::person/name ::task/status-text ::person/id
                    {::person/authed [::person/id ::person/name ::person/op?]}]
    :initial-state {}}
   (let [{authed-id ::person/id
@@ -141,50 +142,51 @@
        (mui/typography {:variant :h5 :component :h6} name)
        (mui/typography {:variant :subtitle1 :color :textSecondary}
                        (str "Effort: " effort " Minutes"))
-       (if-not op?
-         (mui/typography {:variant :subtitle1 :color :textSecondary}
-                         status-text)
-         (comp/fragment
-          (mui/form-control-label
-           {:label    "Complete"
-            :disabled (not person-id)
-            :control  (mui/checkbox
-                       {:checked (boolean complete?)
-                        :onClick #(comp/transact!
-                                   this
-                                   [(task/complete
-                                     #::task{:id        id
-                                             :complete? (not complete?)})])})})
-          (mui/form-control-label
-           {:label    "Late"
-            :disabled (not person-id)
-            :control  (mui/checkbox
-                       {:checked (boolean late?)
-                        :onClick #(comp/transact!
-                                   this
-                                   [(task/complete
-                                     #::task{:id    id
-                                             :late? (not late?)})])})}))))
+       (comp/fragment
+        (mui/typography {:variant :subtitle1 :color :textSecondary :noWrap true}
+                        status-text)
+        (mui/typography {:variant :subtitle1 :color :textSecondary :noWrap true}
+                        person-name)                
+        (mui/form-control-label
+         {:label    "Complete"
+          :disabled (not person-id)
+          :control  (mui/checkbox
+                     {:checked (boolean complete?)
+                      :onClick #(comp/transact!
+                                 this
+                                 [(task/complete
+                                   #::task{:id        id
+                                           :complete? (not complete?)})])})})
+        (mui/form-control-label
+         {:label    "Late"
+          :disabled (not person-id)
+          :control  (mui/checkbox
+                     {:checked (boolean late?)
+                      :onClick #(comp/transact!
+                                 this
+                                 [(task/complete
+                                   #::task{:id    id
+                                           :late? (not late?)})])})})))
       (mui/card-actions
        {}
-       (when-not complete?
-         (if-not person-id
+       (if-not (= person-id authed-id)
+         (mui/tooltip
+          {:title "Claim"}
+          (mui/icon-button
+           {:onClick #(comp/transact!
+                       this
+                       [(task/assign {::task/id   id
+                                      ::person/id authed-id})])}
+           (mui/assignment-ind-icon)))
+         (when (and (= authed-id person-id)
+                    (not complete?))
            (mui/tooltip
-            {:title "Claim"}
+            {:title "Return"}
             (mui/icon-button
              {:onClick #(comp/transact!
                          this
-                         [(task/assign {::task/id   id
-                                        ::person/id authed-id})])}
-             (mui/assignment-ind-icon)))
-           (when (= authed-id person-id)
-             (mui/tooltip
-              {:title "Return"}
-              (mui/icon-button
-               {:onClick #(comp/transact!
-                           this
-                           [(task/assign {::task/id id})])}
-               (mui/assignment-return-icon))))))
+                         [(task/assign {::task/id id})])}
+             (mui/assignment-return-icon)))))
        (when op?
          (mui/tooltip
           {:title "Delete"}

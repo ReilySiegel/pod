@@ -173,7 +173,6 @@
                                  ::person/keys [id]
                                  :as           input}]
   {::pco/input [(pco/? ::complete?) (pco/? ::late?) (pco/? ::person/id)]}
-  (prn input)
   {::status-text (case [(some? id) (boolean complete?) (boolean late?)]
                    [true true false]  "Completed"
                    [true true true]   "Completed late"
