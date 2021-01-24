@@ -54,11 +54,14 @@
      (mui/box
       {:sx {:m 1}}
       (mui/button 
-       {:onClick #(uism/trigger! this
-                                 :com.reilysiegel.pod.client.session/sessions
-                                 :event/login
-                                 {::person/email    email
-                                  ::person/password password})}
+       {:onClick (fn [e]
+                   (uism/trigger! this
+                                  :com.reilysiegel.pod.client.session/sessions
+                                  :event/login
+                                  {::person/email    email
+                                   ::person/password password})
+                   (m/set-string! this :ui/email :value "")
+                   (m/set-string! this :ui/password :value ""))}
        "Login")))))
 
 (def ui-login-form (comp/factory LoginForm))
