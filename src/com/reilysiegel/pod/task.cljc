@@ -5,7 +5,6 @@
                        [com.fulcrologic.fulcro.data-fetch :as df]
                        [com.fulcrologic.fulcro.mutations :as m]])
             #_[tick.alpha.api :as t]
-            [clojure.core.match :as match]
             [clojure.spec.alpha :as s]
             [com.reilysiegel.pod.person :as person]
             [com.reilysiegel.pod.specs :as specs]
