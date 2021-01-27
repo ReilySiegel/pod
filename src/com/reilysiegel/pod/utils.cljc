@@ -1,6 +1,6 @@
 (ns com.reilysiegel.pod.utils
   (:require [com.wsscode.pathom3.connect.operation :as pco]
-            #?(:clj [datahike.core :as d]))
+            #?(:clj [datahike.api :as d]))
   #?(:clj (:import [java.util Base64 UUID])))
 
 #?(:clj

@@ -4,7 +4,7 @@
             [com.reilysiegel.pod.person :as person]
             [com.reilysiegel.pod.utils :as util]
             [com.wsscode.pathom3.connect.operation :as pco]
-            [datahike.core :as d]
+            [datahike.api :as d]
             [clojure.string :as str]))
 
 (pco/defresolver authed-user-basic [{:ring/keys [request]
@@ -58,11 +58,12 @@
 
 
 (pco/defmutation signup [{:com.reilysiegel.pod.server.database/keys [conn]}
-                         {::person/keys [password] :as person}]
-  (d/transact conn [(-> person
-                        (update ::person/email str/lower-case)
-                        (dissoc ::person/password)
-                        (assoc ::person/password-hash (ph/derive password)))])
+                         {::person/keys [password id name email] :as person}]
+  {::pco/output [::person/id]}
+  (d/transact conn [#::person{:id            id
+                              :name          name
+                              :email         (str/lower-case email)
+                              :password-hash (ph/derive password)}])
   {::person/id (::person/id person)})
 
 (defn resolvers []
