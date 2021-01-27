@@ -9,8 +9,7 @@
             [com.reilysiegel.pod.person :as person]
             [com.reilysiegel.pod.specs :as specs]
             [com.reilysiegel.pod.utils :as utils]
-            [com.wsscode.pathom3.connect.operation :as pco]
-            [com.reilysiegel.pod.server.database :as db]))
+            [com.wsscode.pathom3.connect.operation :as pco]))
 
 (s/def ::id uuid?)
 
@@ -51,7 +50,7 @@
                    ::name   name
                    ::effort effort}]
          (when (s/valid? ::task task)
-           (d/transact! conn [task])
+           (d/transact conn [task])
            {::id id}))))
    :cljs
    (m/defmutation upsert [params]
@@ -63,7 +62,7 @@
                              {::person/keys [op?]} ::person/authed}]
      {::pco/global-input [{::person/authed [::person/op?]}]}
      (when op?
-       (d/transact! conn [[:db/retractEntity [::id id]]])
+       (d/transact conn [[:db/retractEntity [::id id]]])
        {}))
    :cljs
    (m/defmutation delete [params]
@@ -77,9 +76,9 @@
      {::pco/global-input [::person/authed?]}
      (when authed?
        (if person-id
-         (d/transact! conn [{::id     id
-                             ::person {::person/id person-id}}])
-         (d/transact! conn [[:db/retract [::id id] ::person]]))
+         (d/transact conn [{::id     id
+                            ::person {::person/id person-id}}])
+         (d/transact conn [[:db/retract [::id id] ::person]]))
        {::id id}))
    :cljs
    (m/defmutation assign [params]
@@ -95,7 +94,7 @@
                                person-id     ::person/id}]
      {::pco/global-input [::person/authed?]}
      (when authed?
-       (d/transact! conn [(select-keys params [::id ::late? ::complete?])])
+       (d/transact conn [(select-keys params [::id ::late? ::complete?])])
        {::id id}))
    :cljs
    (m/defmutation complete [params]

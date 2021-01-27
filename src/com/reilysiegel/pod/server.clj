@@ -11,8 +11,9 @@
             [com.wsscode.pathom3.interface.eql :as p.eql]))
 
 (def config
-  {::db/conn        {:backend :file
-                     :path    (str (System/getProperty "user.home") "/.pod/db")}
+  {::db/conn        {:store {:backend :file
+                             :path    (str (System/getProperty "user.home") "/.pod/db")}
+                     :name  (str `db)}
    ::parser/parser  {::db/conn (ig/ref ::db/conn)}
    ::handler/server {::db/conn       (ig/ref ::db/conn)
                      ::parser/parser (ig/ref ::parser/parser)

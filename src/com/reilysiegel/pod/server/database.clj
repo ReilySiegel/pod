@@ -33,4 +33,4 @@
     (d/create-database opts))
   (let [conn (d/connect opts)]
     (d/transact conn (vec (initial-tx)))
-    (d/connect opts)))
+    conn))
