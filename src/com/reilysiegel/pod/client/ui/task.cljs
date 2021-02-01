@@ -185,17 +185,16 @@
                                              :late? (not late?)})])})}))))
       (mui/card-actions
        {}
-       (if-not (= person-id authed-id)
-         (mui/tooltip
-          {:title "Claim"}
-          (mui/icon-button
-           {:onClick #(comp/transact!
-                       this
-                       [(task/assign {::task/id   id
-                                      ::person/id authed-id})])}
-           (mui/assignment-ind-icon)))
-         (when (and (= authed-id person-id)
-                    (not complete?))
+       (when (not complete?)
+         (if-not (= person-id authed-id)
+           (mui/tooltip
+            {:title "Claim"}
+            (mui/icon-button
+             {:onClick #(comp/transact!
+                         this
+                         [(task/assign {::task/id   id
+                                        ::person/id authed-id})])}
+             (mui/assignment-ind-icon)))
            (mui/tooltip
             {:title "Return"}
             (mui/icon-button
