@@ -5,6 +5,9 @@
             [org.httpkit.server :as http]
             [ring.middleware.defaults :as rmd]
             [ring.util.response :as resp]))
+            [ring.middleware.session.memory :as mem]
+
+(defonce sessions (atom {}))
 
 (defn index [csrf-token]
   (hiccup/html5
@@ -49,7 +52,7 @@
                        (fm/wrap-transit-params)
                        (fm/wrap-transit-response)
                        (rmd/wrap-defaults {:static  {:resources "public"}
-                                           :session true}))
+                                           :session {:store (mem/memory-store sessions)}}))
                    {:port port}))
 
 (defmethod ig/halt-key! ::server [_ server]
