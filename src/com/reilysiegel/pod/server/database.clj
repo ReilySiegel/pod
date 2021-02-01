@@ -17,9 +17,6 @@
    ::task/name
    ::task/effort
    ::task/date
-   ::task/weekday
-   ::task/important?
-   ::task/recurring?
    ::task/complete?
    ::task/late?
    ::task/person])

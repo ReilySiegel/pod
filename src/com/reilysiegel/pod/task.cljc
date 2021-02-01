@@ -18,18 +18,7 @@
 
 (s/def ::effort pos-int?)
 
-#_(s/def ::date t/date?)
-
-#_(s/def ::time t/time?)
-
 (s/def ::date inst?)
-
-(s/def ::weekday
-  #{:monday :tuesday :wednesday :thursday :friday :saturday :sunday})
-
-(s/def ::important? boolean?)
-
-(s/def ::recurring? boolean?)
 
 (s/def ::complete? boolean?)
 
@@ -38,8 +27,7 @@
 (s/def ::person ::person/person)
 
 (s/def ::task (s/keys :req [::name ::id ::effort]
-                      :opt [::date ::time ::weekday ::important? ::person
-                            ::recurring?]))
+                      :opt [::date ::person]))
 
 #?(:clj
    (pco/defmutation upsert [{:com.reilysiegel.pod.server.database/keys [conn]}
