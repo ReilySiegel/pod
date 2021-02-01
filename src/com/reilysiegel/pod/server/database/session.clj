@@ -5,11 +5,12 @@
             [com.reilysiegel.pod.utils :as util]
             [com.wsscode.pathom3.connect.operation :as pco]
             [datahike.api :as d]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [com.reilysiegel.pod.database :as db]))
 
 (pco/defresolver authed-user-basic [{:ring/keys [request]
-                                     :com.reilysiegel.pod.server.database/keys
-                                     [conn]} _]
+                                     ::db/keys  [conn]}
+                                    _]
   {::pco/output [{::person/authed [::person/email]}]}
   (let [[email pass] (-> request
                          :headers
@@ -25,8 +26,8 @@
       {::person/authed {::person/email email}})))
 
 (pco/defresolver authed-user-session [{:ring/keys [request]
-                                       :com.reilysiegel.pod.server.database/keys
-                                       [conn]} _]
+                                       ::db/keys  [conn]}
+                                      _]
   {::pco/output [{::person/authed [::person/email]}]}
   {::person/authed (when-let [email (get-in request [:session ::person/email])]
                      {::person/email email})})
@@ -41,8 +42,8 @@
        (let [new-session (merge existing-session mutation-response)]
          (assoc resp :session new-session))))))
 
-(pco/defmutation login [{:com.reilysiegel.pod.server.database/keys [conn]
-                         :as                                       env}
+(pco/defmutation login [{::db/keys [conn]
+                         :as       env}
                         {::person/keys [email password]}]
   {::pco/output [::person/email]}
   (if (ph/check password
@@ -57,7 +58,7 @@
   (response-updating-session env {::person/email nil}))
 
 
-(pco/defmutation signup [{:com.reilysiegel.pod.server.database/keys [conn]}
+(pco/defmutation signup [{::db/keys [conn]}
                          {::person/keys [password id name email] :as person}]
   {::pco/output [::person/id]}
   (d/transact conn [#::person{:id            id

@@ -10,7 +10,8 @@
             [com.reilysiegel.pod.person :as person]
             [com.reilysiegel.pod.specs :as specs]
             [com.reilysiegel.pod.utils :as utils]
-            [com.wsscode.pathom3.connect.operation :as pco]))
+            [com.wsscode.pathom3.connect.operation :as pco]
+            [com.reilysiegel.pod.database :as db]))
 
 (s/def ::id uuid?)
 
@@ -30,7 +31,7 @@
                       :opt [::date ::person]))
 
 #?(:clj
-   (pco/defmutation upsert [{:com.reilysiegel.pod.server.database/keys [conn]}
+   (pco/defmutation upsert [{::db/keys [conn]}
                             {::keys        [id name effort time-inst date-inst]
                              ::person/keys [authed?]}]
      {::pco/global-input [::person/authed?]}
@@ -52,7 +53,7 @@
                                         ::incomplete]))))))
 
 #?(:clj
-   (pco/defmutation delete [{:com.reilysiegel.pod.server.database/keys [conn]}
+   (pco/defmutation delete [{::db/keys [conn]}
                             {::keys                [id]
                              {::person/keys [op?]} ::person/authed}]
      {::pco/global-input [{::person/authed [::person/op?]}]}
@@ -64,7 +65,7 @@
      (remote [_] true)))
 
 #?(:clj
-   (pco/defmutation assign [{:com.reilysiegel.pod.server.database/keys [conn]}
+   (pco/defmutation assign [{::db/keys [conn]}
                             {::keys        [id]
                              ::person/keys [authed? lowest-score-id]
                              person-id     ::person/id}]
@@ -87,7 +88,7 @@
                                  :com.reilysiegel.pod.client.ui.task/TaskCard)))))
 
 #?(:clj
-   (pco/defmutation complete [{:com.reilysiegel.pod.server.database/keys [conn]}
+   (pco/defmutation complete [{::db/keys [conn]}
                               {::keys        [id]
                                ::person/keys [authed?]
                                :as           params
@@ -125,7 +126,7 @@
 
 #?(:clj
    (pco/defresolver all-incomplete
-     [{:com.reilysiegel.pod.server.database/keys [conn]}
+     [{::db/keys [conn]}
       _]
      {::pco/output [{::incomplete [::id]}]}
      {::incomplete
@@ -141,7 +142,7 @@
 
 #?(:clj
    (pco/defresolver task->person
-     [{:com.reilysiegel.pod.server.database/keys [conn]}
+     [{::db/keys [conn]}
       {::keys [id]}]
      {::person/id
       (d/q '[:find ?pid .
@@ -155,7 +156,7 @@
 
 #?(:clj
    (pco/defresolver task->people
-     [{:com.reilysiegel.pod.server.database/keys [conn]}
+     [{::db/keys [conn]}
       {::keys [id]}]
      {::pco/output [{::people [::person/id]}]}
      {::people
@@ -176,7 +177,7 @@
 
 #?(:clj
    (pco/defresolver person->tasks
-     [{:com.reilysiegel.pod.server.database/keys [conn]}
+     [{::db/keys [conn]}
       {::person/keys [id]}]
      {::pco/output [{::person/tasks [::id]}]}
      {::person/tasks

@@ -1,6 +1,5 @@
 (ns com.reilysiegel.pod.server.parser
   (:require [com.reilysiegel.pod.score :as score]
-            [com.reilysiegel.pod.server.database.person :as db.person]
             [com.reilysiegel.pod.server.database.session :as db.session]
             [com.reilysiegel.pod.task :as task]
             [com.wsscode.pathom3.connect.indexes :as pci]
@@ -59,22 +58,12 @@
       (p.plugin/register resolve-in-mutations)
       (p.plugin/register global-resolve-in-mutations)
       (pci/register (flatten [(score/resolvers)
-                              (db.person/resolvers)
                               (db.session/resolvers)
                               (person/resolvers)
                               (task/resolvers)]))
       (p.connector/connect-env {::pvc/parser-id "pod"})))
 
-(defmethod ig/init-key ::parser [_ opts]
-  (fn parser
-    ([tx]
-     (parser {} {} tx))
-    ([env tx]
-     (parser env {} tx))
-    ([env entity tx]
-     (p.eql/process (merge (indexes)
-                           env
-                           opts)
-                    entity
-                    tx))))
+(defmethod ig/init-key ::env [_ opts]
+  (merge (indexes)
+         opts))
 

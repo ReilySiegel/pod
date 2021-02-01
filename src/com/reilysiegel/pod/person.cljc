@@ -3,7 +3,10 @@
             [clojure.string :as str]
             [clojure.test.check.generators :as tgen]
             [com.reilysiegel.pod.specs :as specs]
-            [com.wsscode.pathom3.connect.operation :as pco]))
+            [com.wsscode.pathom3.connect.operation :as pco]
+            [com.reilysiegel.pod.utils :as util]
+            [com.reilysiegel.pod.database :as db]
+            #?(:clj [datahike.api :as d])))
 
 (s/def ::id uuid?)
 
@@ -38,7 +41,15 @@
   {::pco/input [(pco/? ::authed)]}
   {::authed? (boolean email)})
 
-(defn resolvers []
-  [authed?])
+#?(:clj (pco/defresolver all-user-ids [{::db/keys [conn]} _]
+          {::pco/output [{::all [::id]}]}
+          {::all (d/q '[:find ?id
+                        :keys com.reilysiegel.pod.person/id
+                        :where [_ ::id ?id]]
+                      @conn)}))
 
-(boolean nil)
+#?(:clj (defn resolvers []
+          [authed?
+           all-user-ids
+           (util/pull-resolver ::id [::name ::op? ::email])
+           (util/pull-resolver ::email [::id])]))

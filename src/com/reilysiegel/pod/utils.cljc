@@ -1,5 +1,6 @@
 (ns com.reilysiegel.pod.utils
   (:require [com.wsscode.pathom3.connect.operation :as pco]
+            [com.reilysiegel.pod.database :as db]
             #?(:clj [datahike.api :as d]))
   #?(:clj (:import [java.util Base64 UUID])))
 
@@ -10,8 +11,8 @@
      (pco/resolver (symbol (str (namespace eid-key) \/ (name eid-key) "-pull"))
                    {::pco/input  [eid-key]
                     ::pco/output selector}
-                   (fn [{:com.reilysiegel.pod.server.database/keys [conn]}
-                       input]
+                   (fn [{::db/keys [conn]}
+                        input]
                      (let [eid-val (get input eid-key)]
                        (d/pull @conn selector [eid-key eid-val]))))))
 

@@ -4,8 +4,9 @@
             [integrant.core :as ig]
             [org.httpkit.server :as http]
             [ring.middleware.defaults :as rmd]
-            [ring.util.response :as resp]))
             [ring.middleware.session.memory :as mem]
+            [ring.util.response :as resp]
+            [com.wsscode.pathom3.interface.eql :as p.eql]))
 
 (defonce sessions (atom {}))
 
@@ -28,13 +29,13 @@
   (-> (resp/response (index anti-forgery-token))
       (resp/content-type "text/html")))
 
-(defn- wrap-api [handler uri parser]
+(defn- wrap-api [handler uri env]
   (fn [req]
     (if (= uri (:uri req))
       (fm/generate-response
        (let [parse-result
              (try
-               (parser {:ring/request req} (:transit-params req))
+               (p.eql/process (merge env {:ring/request req}) (:transit-params req))
                (catch Exception e e))]
          (if (instance? Throwable parse-result)
            {:status 500
@@ -45,10 +46,10 @@
       (handler req))))
 
 (defmethod ig/init-key ::server [_ {:com.reilysiegel.pod.server.parser/keys
-                                    [parser]
+                                    [env]
                                     ::keys [port]}]
   (http/run-server (-> index-handler
-                       (wrap-api "/api" parser)
+                       (wrap-api "/api" env)
                        (fm/wrap-transit-params)
                        (fm/wrap-transit-response)
                        (rmd/wrap-defaults {:static  {:resources "public"}

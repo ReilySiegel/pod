@@ -1,23 +1,24 @@
 (ns com.reilysiegel.pod.server
-  (:require [com.reilysiegel.pod.server.database :as db]
+  (:require [com.reilysiegel.pod.person :as person]
+            [com.reilysiegel.pod.score :as score]
+            [com.reilysiegel.pod.server.database]
             [com.reilysiegel.pod.server.handler :as handler]
             [com.reilysiegel.pod.server.parser :as parser]
-            [com.reilysiegel.pod.utils :as utils]
-            [datahike.api :as d]
-            [integrant.core :as ig]
-            [com.reilysiegel.pod.person :as person]
-            [com.reilysiegel.pod.score :as score]
+            [com.reilysiegel.pod.database :as db]
             [com.reilysiegel.pod.task :as task]
-            [com.wsscode.pathom3.interface.eql :as p.eql]))
+            [com.reilysiegel.pod.utils :as utils]
+            [com.wsscode.pathom3.interface.eql :as p.eql]
+            [datahike.api :as d]
+            [integrant.core :as ig]))
 
 (def config
   {::db/conn        {:store {:backend :file
                              :path    (str (System/getProperty "user.home") "/.pod/db")}
                      :name  (str `db)}
-   ::parser/parser  {::db/conn (ig/ref ::db/conn)}
-   ::handler/server {::db/conn       (ig/ref ::db/conn)
-                     ::parser/parser (ig/ref ::parser/parser)
-                     ::handler/port  3000}})
+   ::parser/env     {::db/conn (ig/ref ::db/conn)}
+   ::handler/server {::db/conn      (ig/ref ::db/conn)
+                     ::parser/env   (ig/ref ::parser/env)
+                     ::handler/port 3000}})
 
 (def system (atom nil))
 
@@ -53,17 +54,10 @@
      [?p ::person/id ?pid]]
    @(::db/conn @system)
    #uuid "60072597-398f-43db-8347-651cdcf8f4f3")
-  ((::parser/parser @system)
-   {}
-   [{[:com.reilysiegel.pod.person/id
-      #uuid "ba0c3b54-157f-429f-a688-01f0d836e55f"]
-     [#_#_#_:com.reilysiegel.pod.person/id
-      :com.reilysiegel.pod.person/name
-      :com.reilysiegel.pod.person/op?
-      :com.reilysiegel.pod.person/tasks
-      :com.reilysiegel.pod.score/alpha 
-      :com.reilysiegel.pod.score/beta
-      #_:com.reilysiegel.pod.score/mean]}])
+  
+  (-> ((::parser/parser @system)
+       {}
+       [::person/by-score]))
   
   (d/entity   @(::db/conn @system)
               (d/q '[:find ?e .
