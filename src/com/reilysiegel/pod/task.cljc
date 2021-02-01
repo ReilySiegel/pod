@@ -3,7 +3,8 @@
             #?@(:cljs [[com.fulcrologic.fulcro.algorithms.form-state :as fs]
                        [com.fulcrologic.fulcro.components :as comp]
                        [com.fulcrologic.fulcro.data-fetch :as df]
-                       [com.fulcrologic.fulcro.mutations :as m]])
+                       [com.fulcrologic.fulcro.mutations :as m]
+                       [com.fulcrologic.fulcro.algorithms.data-targeting :as targeting]])
             #_[tick.alpha.api :as t]
             [clojure.spec.alpha :as s]
             [com.reilysiegel.pod.person :as person]
@@ -54,7 +55,13 @@
            {::id id}))))
    :cljs
    (m/defmutation upsert [params]
-     (remote [_] true)))
+     (remote [env] (-> env
+                       (m/returning (comp/registry-key->class
+                                     :com.reilysiegel.pod.client.ui.task/TaskCard))
+                       (m/with-target (targeting/prepend-to
+                                       [:component/id
+                                        :com.reilysiegel.pod.client.ui.task/task-list
+                                        ::incomplete]))))))
 
 #?(:clj
    (pco/defmutation delete [{:com.reilysiegel.pod.server.database/keys [conn]}
@@ -71,13 +78,18 @@
 #?(:clj
    (pco/defmutation assign [{:com.reilysiegel.pod.server.database/keys [conn]}
                             {::keys        [id]
-                             ::person/keys [authed?]
+                             ::person/keys [authed? lowest-score-id]
                              person-id     ::person/id}]
-     {::pco/global-input [::person/authed?]}
+     {::pco/global-input [::person/authed? ::person/lowest-score-id]}
      (when authed?
        (if person-id
          (d/transact conn [{::id     id
-                            ::person {::person/id person-id}}])
+                            ::person {::person/id
+                                      ;; If id is provided as literal `true`, assign to
+                                      ;; the person with the lowest score.
+                                      (if (true? person-id)
+                                        lowest-score-id
+                                        person-id)}}])
          (d/transact conn [[:db/retract [::id id] ::person]]))
        {::id id}))
    :cljs

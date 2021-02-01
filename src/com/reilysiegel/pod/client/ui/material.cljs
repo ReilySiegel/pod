@@ -15,6 +15,7 @@
             ["@material-ui/icons/AssignmentInd" :default AssignmentIndIcon]
             ["@material-ui/icons/AssignmentLate" :default AssignmentLateIcon]
             ["@material-ui/icons/AssignmentReturn" :default AssignmentReturnIcon]
+            ["@material-ui/icons/AssignmentReturned" :default AssignmentReturnedIcon]
             [com.fulcrologic.fulcro.algorithms.react-interop :as interop])
   (:refer-clojure :exclude [list]))
 
@@ -63,6 +64,7 @@
 (def assignment-ind-icon (interop/react-factory AssignmentIndIcon))
 (def assignment-late-icon (interop/react-factory AssignmentLateIcon))
 (def assignment-return-icon (interop/react-factory AssignmentReturnIcon))
+(def assignment-returned-icon (interop/react-factory AssignmentReturnedIcon))
 
 (def styles-provider (interop/react-factory mui/StylesProvider))
 (def theme-provider (interop/react-factory  styles/ThemeProvider))

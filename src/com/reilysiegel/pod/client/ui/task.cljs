@@ -204,13 +204,22 @@
                          [(task/assign {::task/id id})])}
              (mui/assignment-return-icon)))))
        (when op?
-         (mui/tooltip
-          {:title "Delete"}
-          (mui/icon-button
-           {:onClick #(comp/transact!
-                       this
-                       [(task/delete {::task/id id})])}
-           (mui/delete-icon))))
+         (comp/fragment
+          (mui/tooltip
+           {:title "Assign"}
+           (mui/icon-button
+            {:onClick #(comp/transact!
+                        this
+                        [(task/assign {::task/id   id
+                                       ::person/id true})])}
+            (mui/assignment-returned-icon)))
+          (mui/tooltip
+           {:title "Delete"}
+           (mui/icon-button
+            {:onClick #(comp/transact!
+                        this
+                        [(task/delete {::task/id id})])}
+            (mui/delete-icon)))))
        (mui/tooltip
         {:title "History"}
         (mui/icon-button

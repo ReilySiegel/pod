@@ -2,6 +2,7 @@
   (:require [kixi.stats.math :as ksm]
             [com.reilysiegel.pod.person :as person]
             [com.wsscode.pathom3.connect.operation :as pco]
+            [com.wsscode.pathom3.connect.built-in.resolvers :as p.bir]
             [com.reilysiegel.pod.task :as task]))
 
 (def ^:dynamic *prior*
@@ -55,43 +56,40 @@
      (B dist)))
 
 (pco/defresolver score [{::person/keys [tasks]}]
-  {::pco/priority 10000
+  {::pco/priority 1
    ::pco/input    [{::person/tasks
                     [(pco/? ::task/complete?)
                      (pco/? ::task/late?)
                      ::task/effort]}]
-   ::pco/output   [::alpha ::beta]}
-  (merge-beta-params (mapv effort-adjusted-params tasks)))
+   ::pco/output   [{::score [::alpha ::beta]}]}
+  {::score (merge-beta-params (mapv effort-adjusted-params tasks))})
 
-(pco/defresolver score-default []
-  {::pco/input  [::person/id]
-   ::pco/output [::alpha ::beta]}
-  *prior*)
+(pco/defresolver default-score []
+  {::pco/inuput [::person/id]
+   ::pco/output [{::score [::alpha ::beta]}]}
+  {::score *prior*})
 
-
-(pco/defresolver score-mean [{::keys [alpha beta]}]
+(pco/defresolver score-mean [{{::keys [alpha beta]} ::score}]
+  {::pco/input [{::score [::alpha ::beta]}]}
   {::mean #?(:clj (float (/ alpha (+ alpha beta)))
              :default (/ alpha (+ alpha beta)))})
+
+(pco/defresolver people-by-score [{::person/keys [all]}]
+  {::pco/input  [{::person/all [::person/id ::person/email ::mean]}]
+   ::pco/output [{::person/by-score [::person/id]}]}
+  {::person/by-score (->> all
+                          (remove (comp #{"default@pod"} ::person/email))
+                          (sort-by ::mean)
+                          vec)})
 
 (defn resolvers
   "Return the list of Pathom resolvers related to scores."
   []
-  [
+  [people-by-score
+   (p.bir/single-attr-resolver ::person/by-score ::person/lowest-score first)
+   (p.bir/single-attr-resolver ::person/lowest-score ::person/lowest-score-id ::person/id)
    score
-   score-default
+   default-score
+   (p.bir/single-attr-resolver ::score ::alpha ::alpha)
+   (p.bir/single-attr-resolver ::score ::beta ::beta)
    score-mean])
-
-
-(comment
-  (binding [*prior* {::alpha 10
-                     ::beta  5}]
-    (beta-between (merge-beta-params
-                   (flatten
-                    [(repeat 12 (effort-adjusted-params 15 true false))
-                     (repeat 0 (effort-adjusted-params 15 true true))
-                     (repeat 2 (effort-adjusted-params 15 false true))
-                     (repeat 6 (effort-adjusted-params 90 true false))
-                     (repeat 0 (effort-adjusted-params 90 true true))
-                     (repeat 0 (effort-adjusted-params 90 false true))]))
-                  0.9
-                  1)))
