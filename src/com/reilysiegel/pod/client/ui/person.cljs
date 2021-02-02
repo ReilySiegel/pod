@@ -33,6 +33,8 @@
              :spacing   2}
             (map ui.task/ui-task-card tasks)))
 
+(def ui-person (comp/factory Person))
+
 (comp/defsc PersonCard [this {::person/keys [id name email]
                               :>/keys       [score-graph]}]
   {:ident         ::person/id
