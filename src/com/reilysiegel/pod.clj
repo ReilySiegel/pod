@@ -1,12 +1,14 @@
 (ns com.reilysiegel.pod
-  (:gen-class))
+  (:gen-class)
+  (:require [com.reilysiegel.pod.server :as server]
+            [shadow.cljs.devtools.api :as api]
+            [integrant.core :as ig]))
 
-(defn greet
-  "Callable entry point to the application."
-  [data]
-  (println (str "Hello, " (or (:name data) "World") "!")))
+(defn compile-cljs
+  {:shadow/requires-server true}
+  [_opts]
+  (api/release :frontend))
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (greet {:name (first args)}))
+(defn start
+  [config]
+  (reset! server/system (ig/init (merge server/config config))))
