@@ -53,8 +53,9 @@
                                merge
                                (p.eql/process env global-input)))))))})
 
-(defn indexes []
-  (-> (p.plugin/register throw-mutation-errors-plugin)
+(defn indexes [env]
+  (-> env
+      (p.plugin/register throw-mutation-errors-plugin)
       (p.plugin/register resolve-in-mutations)
       (p.plugin/register global-resolve-in-mutations)
       (pci/register (flatten [(score/resolvers)
@@ -64,6 +65,5 @@
       (p.connector/connect-env {::pvc/parser-id "pod"})))
 
 (defmethod ig/init-key ::env [_ opts]
-  (merge (indexes)
-         opts))
+  (indexes opts))
 
